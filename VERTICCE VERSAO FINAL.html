@@ -1,0 +1,1038 @@
+<!DOCTYPE html> 
+<html lang="pt-BR"> 
+<head>   
+  <meta charset="UTF-8">   
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">   
+  <title>VERTICCE | Painel Executivo Integrado</title>   
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>   
+  <script src="https://unpkg.com/lucide@latest"></script>   
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>     
+    :root {       
+      --bg-dark: #0c0814;       
+      --bg-card: #151022;       
+      --bg-sidebar: #090510;       
+      --border-color: #271e38;       
+      --border-light: #3d2f54;
+      --text-primary: #f4f2f8;       
+      --text-muted: #9e93b0;       
+      
+      --brand-primary: #830199; 
+      --brand-hover: #9c04b5;  
+      --brand-light: rgba(131, 1, 153, 0.15);
+      
+      --accent-success: #10b981; 
+      --accent-danger: #ef4444;
+      --accent-warning: #f59e0b;
+    }     
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }     
+    body { background-color: var(--bg-dark); color: var(--text-primary); height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased; }     
+    
+    .font-mono { font-family: 'IBM Plex Mono', monospace; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    .app-container { display: flex; height: 100vh; }          
+    
+    .sidebar { width: 280px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 1.5rem 1.25rem; z-index: 10; }     
+    .brand { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 2.5rem; padding-left: 0.5rem; }     
+    
+    .logo-container { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+    .logo-icon-svg { width: 36px; height: 36px; flex-shrink: 0; }
+    .logo-text { font-size: 1.25rem; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; }
+
+    .nav-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }     
+    .nav-group-title { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin: 1.5rem 0 0.5rem 0.5rem; letter-spacing: 0.08em; text-transform: uppercase; }     
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: transparent; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; border-radius: 8px; cursor: pointer; width: 100%; text-align: left; transition: all 0.2s ease; }     
+    .nav-item i { width: 18px; height: 18px; opacity: 0.7; transition: 0.2s; }
+    .nav-item:hover { background-color: rgba(255,255,255,0.03); color: var(--text-primary); }     
+    .nav-item.active { background-color: var(--brand-light); color: #d45fff; }     
+    .nav-item.active i { opacity: 1; color: #d45fff; }
+    
+    .sidebar-footer { padding-top: 1.25rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.85rem; margin-top: auto; }     
+    .user-avatar { width: 36px; height: 36px; background-color: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; color: white; }     
+    
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background-color: var(--bg-dark); }     
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border-color); background: rgba(12, 8, 20, 0.85); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 5; }     
+    .topbar h1 { font-size: 1.4rem; font-weight: 600; margin-top: 0.2rem; }
+    
+    .content-body { padding: 2.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }     
+    .page-view { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }     
+    .page-view.active { display: block; }     
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }     
+    
+    .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); }     
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+    
+    .grid-2-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }     
+    .grid-3-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }     
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }     
+    .kpi-card { display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+    .kpi-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; }     
+    .kpi-value { font-size: 2rem; font-weight: 700; margin: 0.75rem 0 0.5rem; letter-spacing: -0.02em; }     
+    .kpi-trend { font-size: 0.85rem; font-weight: 500; }
+    
+    .badge { font-size: 0.75rem; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid transparent; }     
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--accent-success); border-color: rgba(16, 185, 129, 0.2); }     
+    .badge-brand { background: var(--brand-light); color: #d45fff; border-color: rgba(131, 1, 153, 0.3); }     
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.2); }     
+    .badge-outline { background: transparent; border-color: var(--border-color); color: var(--text-muted); }
+    
+    .text-success { color: var(--accent-success); }     
+    .text-danger { color: var(--accent-danger); }     
+    .text-muted { color: var(--text-muted); }     
+    .text-brand { color: #d45fff; }
+
+    .mt-1 { margin-top: 0.25rem; } .mt-2 { margin-top: 0.5rem; } .mt-3 { margin-top: 1rem; } .mt-4 { margin-top: 1.5rem; }     
+    .mb-2 { margin-bottom: 0.5rem; } .mb-3 { margin-bottom: 1rem; } .mb-4 { margin-bottom: 1.5rem; }     
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }     
+    
+    .btn { padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid transparent; font-size: 0.9rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s ease; font-family: 'Inter', sans-serif; }     
+    .btn-primary { background-color: var(--brand-primary); color: white; box-shadow: 0 2px 8px rgba(131, 1, 153, 0.35); }     
+    .btn-primary:hover { background-color: var(--brand-hover); transform: translateY(-1px); }     
+    .btn-success { background-color: var(--accent-success); color: white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35); }     
+    .btn-success:hover { background-color: #0d9668; transform: translateY(-1px); }     
+    .btn-outline { background: transparent; border-color: var(--border-light); color: var(--text-primary); }     
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }     
+    .w-full { width: 100%; }
+    
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .form-input { width: 100%; padding: 0.75rem 1rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; transition: 0.2s; font-family: 'Inter', sans-serif; }     
+    .form-input:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px var(--brand-light); }
+    
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 10px 0; }
+    input[type=range]:focus { outline: none; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: var(--border-color); border-radius: 4px; }
+    input[type=range]::-webkit-slider-thumb { height: 20px; width: 20px; border-radius: 50%; background: var(--brand-primary); cursor: pointer; -webkit-appearance: none; margin-top: -7px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: 0.1s; }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+    
+    .pills-container { display: flex; gap: 0.5rem; flex-wrap: wrap; }     
+    .pill-btn { padding: 0.4rem 1rem; border-radius: 20px; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; font-size: 0.85rem; transition: 0.2s; }     
+    .pill-btn:hover { background: rgba(255,255,255,0.03); }
+    .pill-btn.active { background: var(--brand-primary); color: white; border-color: var(--brand-primary); }     
+    
+    .video-layout { display: grid; grid-template-columns: 2.5fr 1fr; gap: 1.5rem; }     
+    .video-player-wrapper { background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16/9; position: relative; border: 1px solid var(--border-color); }     
+    .video-player-wrapper video { width: 100%; height: 100%; object-fit: cover; }     
+    
+    .video-card-item { display: flex; gap: 1rem; padding: 1rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: 0.2s; align-items: center; }     
+    .video-card-item:hover, .video-card-item.active { border-color: var(--brand-primary); background: var(--brand-light); }     
+    .video-thumb { width: 80px; height: 56px; background: var(--bg-card); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); flex-shrink: 0; border: 1px solid var(--border-light); }     
+    
+    .funnel-stage { padding: 1rem; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }     
+    .funnel-stage:hover { border-color: var(--border-light); }
+    .funnel-label { display: flex; align-items: center; gap: 0.75rem; font-weight: 500; }
+    .funnel-value { font-size: 1.25rem; font-weight: 700; }
+    
+    .radio-card-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .radio-card { display: flex; gap: 0.75rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s; align-items: flex-start; background: var(--bg-dark); }
+    .radio-card:hover { border-color: var(--border-light); }
+    .radio-card input { margin-top: 0.25rem; accent-color: var(--brand-primary); width: 18px; height: 18px; cursor: pointer; }
+    .radio-card:has(input:checked) { border-color: var(--brand-primary); background: var(--brand-light); }
+    
+    /* Tabelas Fiscais Estilizadas */
+    .sn-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 1rem; }
+    .sn-table th, .sn-table td { padding: 1rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .sn-table th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; }
+    .sn-table td.num, .sn-table th.num { text-align: right; }
+    .sn-table td { color: var(--text-primary); }
+    .sn-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+    .sn-table tfoot td { border-bottom: none; border-top: 2px solid var(--border-light); font-weight: 700; font-size: 1rem; }
+    
+    .sn-alert { padding: 1rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.5; display: flex; gap: 0.75rem; align-items: flex-start; margin-top: 1rem; }
+    .sn-alert-info { background: rgba(131, 1, 153, 0.1); border: 1px solid rgba(131, 1, 153, 0.3); color: #e8b0ff; }
+    
+    .cnae-card { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;}
+    .cnae-card:hover { border-color: var(--brand-primary); }
+    
+    .integration-pulse { animation: pulseBorder 2s infinite; }
+    @keyframes pulseBorder { 0% { box-shadow: 0 0 0 0 rgba(131, 1, 153, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(131, 1, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(131, 1, 153, 0); } }
+
+    .chat-msg-bubble { max-width: 80%; padding: 1rem; border-radius: 12px; line-height: 1.5; font-size: 0.9rem; }
+    .chat-msg-user { align-self: flex-end; background: var(--brand-primary); color: white; border-bottom-right-radius: 2px; }
+    .chat-msg-ai { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); border-bottom-left-radius: 2px; }
+  </style> 
+</head> 
+<body>   
+  <div class="app-container">     
+    
+    <aside class="sidebar">       
+      <div class="brand">         
+        <a href="#" class="logo-container">
+          <svg class="logo-icon-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="32" width="30" height="75" rx="15" transform="rotate(-35 18 32)" fill="#830199"/>
+            <circle cx="75" cy="35" r="14" fill="#830199"/>
+          </svg>
+          <span class="logo-text">verticce</span>
+        </a>       
+      </div>       
+      
+      <nav class="nav-menu">         
+        <div class="nav-group-title">Painel Geral</div>         
+        <button class="nav-item active" onclick="switchPage('dashboard', this)"><i data-lucide="layout-dashboard"></i> Dashboard Resumo</button>         
+        <button class="nav-item" onclick="switchPage('consultor-ia', this)"><i data-lucide="sparkles"></i> Consultor IA (Gemini)</button>                  
+        
+        <div class="nav-group-title">Operações Comerciais</div>         
+        <button class="nav-item" onclick="switchPage('comercial', this)"><i data-lucide="line-chart"></i> Metas & Motor de Vendas</button>                  
+        
+        <div class="nav-group-title">Módulos Fiscais</div> 
+        <button class="nav-item" onclick="switchPage('financeiro', this)"><i data-lucide="receipt"></i> Simples Nacional</button>         
+        <button class="nav-item" onclick="switchPage('simples-hibrido', this)"><i data-lucide="scale"></i> Simples Híbrido</button>
+        <button class="nav-item" onclick="switchPage('lucro-presumido', this)"><i data-lucide="building"></i> Lucro Presumido</button>
+        <button class="nav-item" onclick="switchPage('consulta-cnae', this)"><i data-lucide="search"></i> Consulta CNAE</button>
+
+        <div class="nav-group-title">Conhecimento</div>         
+        <button class="nav-item" onclick="switchPage('aulas', this)"><i data-lucide="graduation-cap"></i> Curadoria de Aulas</button>         
+        
+        <div class="nav-group-title">Sistema</div>         
+        <button class="nav-item" onclick="switchPage('configuracoes', this)"><i data-lucide="settings"></i> Ajustes</button>       
+      </nav>       
+      
+      <div class="sidebar-footer">         
+        <div class="user-avatar" id="sidebar-avatar">VT</div>         
+        <div class="user-info" style="overflow: hidden;">           
+          <strong id="sidebar-company-name" style="display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; font-size: 0.9rem;">Verticce Corporate</strong>           
+          <span style="display:block; font-size:0.75rem; color:var(--text-muted)">Gemini API Ativa</span>         
+        </div>       
+      </div>     
+    </aside>     
+
+    <main class="main-content">       
+      <header class="topbar">         
+        <div>           
+          <span class="text-muted" style="font-size:0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Visão Geral</span>           
+          <h1 id="page-title">Dashboard Resumo</h1>         
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <span class="badge badge-brand" id="active-regime-badge"><i data-lucide="refresh-cw" style="width:12px; margin-right:4px;"></i> Regime Ativo: Simples</span>
+          <button class="btn btn-outline" style="padding: 0.5rem; border-radius: 50%;"><i data-lucide="bell" style="width: 18px;"></i></button>
+        </div>
+      </header>       
+      
+      <div class="content-body">                  
+        
+        <!-- DASHBOARD -->
+        <section id="page-dashboard" class="page-view active">           
+          <div class="kpi-grid mb-4">             
+            <div class="card kpi-card">               
+              <span class="kpi-title"><i data-lucide="trending-up" class="text-success"></i> Receita Bruta (Mês)</span>               
+              <div class="kpi-value" id="kpi-dash-bruto">R$ 0,00</div>               
+              <span class="kpi-trend text-muted">Projeção via <a href="#" onclick="document.querySelectorAll('.nav-item')[2].click()" style="color:#d45fff; text-decoration:none;">Simulador Comercial</a></span>             
+            </div>             
+            
+            <div class="card kpi-card">               
+              <span class="kpi-title"><i data-lucide="file-minus" class="text-danger"></i> Impostos (Regime Ativo)</span>               
+              <div class="kpi-value" id="kpi-dash-imposto">R$ 0,00</div>               
+              <span class="kpi-trend text-muted">Apuração integrada</span>             
+            </div>             
+            
+            <div class="card kpi-card" style="border: 1px solid var(--brand-primary); background: linear-gradient(to bottom right, var(--bg-card), rgba(131,1,153,0.08));">               
+              <span class="kpi-title"><i data-lucide="wallet" class="text-brand"></i> Receita Líquida</span>               
+              <div class="kpi-value text-brand" id="kpi-dash-liquido">R$ 0,00</div>               
+              <span class="kpi-trend text-success" id="kpi-dash-margem">+ 0,00% Margem Líquida</span>             
+            </div>           
+          </div>           
+          
+          <div class="grid-2-col">             
+            <div class="card">               
+              <div class="card-header"><h3 class="card-title">Evolução Bruto vs. Líquido</h3></div>
+              <div style="height: 280px; width: 100%;"><canvas id="dashboardChart"></canvas></div>             
+            </div>             
+            <div class="card">               
+              <div class="card-header"><h3 class="card-title">Funil Comercial Resultante</h3><span class="badge badge-outline">Mês Atual</span></div>               
+              <div class="funnel-stage">
+                <div class="funnel-label"><i data-lucide="users" class="text-muted"></i> Leads Gerados</div>
+                <div class="funnel-value" id="dash-funil-leads">0</div>
+              </div>
+              <div class="funnel-stage">
+                <div class="funnel-label"><i data-lucide="filter" class="text-brand"></i> Oportunidades Qualificadas</div>
+                <div class="funnel-value text-brand" id="dash-funil-qual">0</div>
+              </div>
+              <div class="funnel-stage">
+                <div class="funnel-label"><i data-lucide="check-circle" class="text-success"></i> Vendas Fechadas</div>
+                <div class="funnel-value text-success" id="dash-funil-vendas">0</div>
+              </div>             
+              <p class="text-muted mt-3" style="font-size: 0.85rem; text-align: center;">Ticket Médio: <strong id="dash-ticket">R$ 0,00</strong></p>
+            </div>           
+          </div>         
+        </section>         
+        
+        <!-- COMERCIAL -->
+        <section id="page-comercial" class="page-view">           
+          <div class="grid-2-col">             
+            <div class="card">               
+              <div class="card-header"><h3 class="card-title">Simulador de Motor de Vendas</h3></div>
+              <p class="text-muted mb-4" style="font-size: 0.9rem;">Ajuste os indicadores abaixo. A receita gerada alimentará automaticamente sua projeção fiscal e o contexto do Gemini.</p>                              
+              
+              <div class="form-group mt-4">                 
+                <div class="flex-between mb-2"><label class="form-label" style="margin:0;">Volume de Leads (Mês)</label><strong id="val-leads" style="color: var(--text-primary);">700</strong></div>                 
+                <input type="range" id="slide-leads" min="100" max="3000" value="700" oninput="appReactivity.atualizarSimulador()">               
+              </div>               
+              
+              <div class="form-group mt-4">                 
+                <div class="flex-between mb-2"><label class="form-label" style="margin:0;">Taxa de Qualificação e Fechamento</label><strong id="val-qual" style="color: var(--text-primary);">40%</strong></div>                 
+                <input type="range" id="slide-qual" min="5" max="80" value="40" oninput="appReactivity.atualizarSimulador()">               
+              </div>               
+              
+              <div class="form-group mt-4">                 
+                <div class="flex-between mb-2"><label class="form-label" style="margin:0;">Ticket Médio (R$)</label><strong id="val-ticket" style="color: var(--text-primary);">R$ 5.000</strong></div>                 
+                <input type="range" id="slide-ticket" min="500" max="50000" step="500" value="5000" oninput="appReactivity.atualizarSimulador()">               
+              </div>             
+            </div>             
+            
+            <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(180deg, var(--bg-card) 0%, rgba(131, 1, 153, 0.08) 100%); border: 1px solid rgba(131, 1, 153, 0.3);">               
+              <h4 class="text-muted" style="font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem;">Projeção de Faturamento Bruto</h4>               
+              <div class="text-success integration-pulse" style="font-size: 3.5rem; font-weight: 800; margin: 1rem 0; letter-spacing: -0.03em; border-radius: 12px; padding: 0.5rem 1rem;" id="res-faturamento">R$ 210.000</div>               
+              <div style="background: var(--bg-dark); padding: 0.75rem 1.5rem; border-radius: 20px; border: 1px solid var(--border-color); display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="check-circle" class="text-success" style="width: 16px;"></i>
+                <span style="font-size: 0.9rem; font-weight: 500;"><span id="res-vendas" class="text-primary">42</span> vendas geradas</span>
+              </div>
+            </div>           
+          </div>         
+        </section>         
+
+        <!-- FINANCEIRO: SIMPLES NACIONAL PADRÃO -->
+        <section id="page-financeiro" class="page-view">           
+          <div class="card">
+            <div class="card-header" style="margin-bottom: 2rem;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.3rem;">Simples Nacional (Tradicional)</h3>
+                <p class="text-muted mt-1" style="font-size: 0.9rem;">Apuração baseada na receita comercial projetada.</p>
+              </div>
+              <span class="badge badge-brand"><i data-lucide="refresh-cw" style="width:14px;"></i> Sincronizado</span>
+            </div>
+
+            <div class="grid-2-col" style="gap: 3rem;">
+              <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+                <div>
+                  <h4 class="form-label" style="font-size: 0.95rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">1. Histórico de Receita Bruta (RBT12)</h4>
+                  <div class="grid-2-col" style="gap: 1rem; grid-template-columns: 1fr 1fr;">
+                    <div class="form-group" style="margin:0;"><label class="form-label">Mercado Interno (R$)</label><input type="number" id="sn-rbt12interno" class="form-input font-mono" placeholder="Ex: 850000.00" oninput="snApp.updateFatorR()"></div>
+                    <div class="form-group" style="margin:0;"><label class="form-label">Exportação (R$)</label><input type="number" id="sn-rbt12externo" class="form-input font-mono" placeholder="0.00" oninput="snApp.updateFatorR()"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="form-label" style="font-size: 0.95rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">2. Enquadramento Fiscal</h4>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Natureza da Receita</label>
+                    <select id="sn-atividade" class="form-input" onchange="snApp.onAtividadeChange()">
+                      <option value="servicos" selected>Prestação de Serviços (Anexos III, IV, V)</option>
+                      <option value="I">Comércio (Revenda) — Anexo I</option>
+                      <option value="II">Indústria — Anexo II</option>
+                    </select>
+                  </div>
+                  <div id="sn-servicoBox" style="margin-top: 1.25rem;">
+                    <label class="form-label">Regra de Anexo (Serviços)</label>
+                    <div class="radio-card-group">
+                      <label class="radio-card"><input type="radio" name="sn-anexoServico" value="auto" checked onchange="snApp.onAnexoServicoChange()"><div><strong style="font-size: 0.85rem; color: var(--text-primary);">Auto (Fator R)</strong></div></label>
+                      <label class="radio-card"><input type="radio" name="sn-anexoServico" value="III" onchange="snApp.onAnexoServicoChange()"><div><strong style="font-size: 0.85rem; color: var(--text-primary);">Anexo III</strong></div></label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="form-label" style="font-size: 0.95rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">3. Base (Mês Atual)</h4>
+                  <div class="form-group" style="margin:0;"><label class="form-label">Faturamento Comercial (R$)</label><input type="number" id="sn-rpainterno" class="form-input font-mono" style="border-color: var(--brand-primary); background: rgba(131,1,153,0.05);" readonly></div>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="background: linear-gradient(145deg, var(--bg-dark), var(--bg-card)); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px; position: sticky; top: 100px;">
+                  <span class="badge badge-danger mb-2">IMPOSTO SIMPLES NACIONAL (DAS)</span>
+                  <div class="text-primary" style="font-size: 3rem; font-weight: 800; line-height: 1.1; margin: 0.5rem 0;" id="sn-dasTotal">R$ 0,00</div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                    <div><span class="text-muted" style="font-size:0.75rem;">Enquadramento</span><br><strong id="sn-anexoUsado">—</strong></div>
+                    <div><span class="text-muted" style="font-size:0.75rem;">Alíquota Efetiva</span><br><strong id="sn-aliqEfetiva" class="text-danger">—</strong></div>
+                  </div>
+                  <button class="btn btn-outline w-full mt-4" onclick="appReactivity.setRegimeAtivo('Simples Nacional', globalState.fiscal.impostoSN)"><i data-lucide="check-circle" style="width: 16px;"></i> Aplicar ao Dashboard</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>         
+
+        <!-- ABA: SIMPLES HÍBRIDO -->
+        <section id="page-simples-hibrido" class="page-view">
+          <div class="card" style="max-width: 950px; margin: 0 auto;">
+            <div class="card-header" style="margin-bottom: 1rem;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.3rem;">Simulador: Simples Nacional Híbrido</h3>
+                <p class="text-muted mt-1" style="font-size: 0.9rem;">Comparativo entre Simples Tradicional vs. Regime Híbrido (CBS/IBS não cumulativos).</p>
+              </div>
+              <span class="badge badge-brand" style="white-space: nowrap;">LC 214/2025</span>
+            </div>
+
+            <div class="grid-2-col mt-4">
+              <div class="form-group">
+                <label class="form-label">Natureza da receita (Simulação)</label>
+                <select id="sh_atividade" class="form-input">
+                  <option value="I">Comércio — Anexo I</option>
+                  <option value="servicos">Prestação de Serviços — Anexo III</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Faturamento Mês (R$)</label>
+                <input type="number" id="sh_faturamento" class="form-input font-mono" placeholder="Sincronizado ou digite...">
+              </div>
+            </div>
+
+            <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); margin: 1rem 0 1.5rem 0;">
+              <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem;">Parâmetros Híbridos (Tributos por fora)</h4>
+              <div class="grid-3-col">
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Alíquota CBS (%)</label>
+                  <input type="number" id="sh_taxaCBS" class="form-input font-mono" step="0.01" value="8.80">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Alíquota IBS (%)</label>
+                  <input type="number" id="sh_taxaIBS" class="form-input font-mono" step="0.01" value="17.70">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Créditos de Entrada (R$)</label>
+                  <input type="number" id="sh_creditos" class="form-input font-mono" step="0.01" value="1500.00">
+                </div>
+              </div>
+            </div>
+
+            <button onclick="SHApp.calcular()" class="btn btn-primary w-full"><i data-lucide="calculator" style="width: 18px;"></i> Executar Comparativo Fiscal</button>
+
+            <!-- Resultados Simples Híbrido -->
+            <div id="sh_results" style="display: none; margin-top: 2rem;">
+              <div class="grid-2-col" style="gap: 1.5rem;">
+                
+                <!-- Coluna Tradicional -->
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem;">
+                  <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 1rem;">Cenário 1: Tradicional</h4>
+                  <table class="sn-table">
+                    <tbody>
+                      <tr><td>Alíquota Efetiva SN</td><td class="num font-mono" id="sh_res_trad_aliq">0.00%</td></tr>
+                      <tr><td>DAS Total Estimado</td><td class="num font-mono text-danger" id="sh_res_trad_imposto">R$ 0,00</td></tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td>Carga Tributária</td><td class="num font-mono" id="sh_res_trad_carga">0.00%</td></tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <!-- Coluna Híbrido -->
+                <div style="border: 1px solid var(--brand-primary); background: rgba(131,1,153,0.05); border-radius: 8px; padding: 1.5rem;">
+                  <h4 style="color: #d45fff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 1rem;">Cenário 2: Híbrido (Nova Regra)</h4>
+                  <table class="sn-table" style="border-color: rgba(131,1,153,0.3);">
+                    <tbody>
+                      <tr><td style="border-color: rgba(131,1,153,0.2);">DAS (Base IRPJ/CSLL/CPP)</td><td class="num font-mono" style="border-color: rgba(131,1,153,0.2);" id="sh_res_hib_das">R$ 0,00</td></tr>
+                      <tr><td style="border-color: rgba(131,1,153,0.2);">CBS + IBS (Débito)</td><td class="num font-mono" style="border-color: rgba(131,1,153,0.2);" id="sh_res_hib_iva">R$ 0,00</td></tr>
+                      <tr><td style="border-color: rgba(131,1,153,0.2);">Créditos Utilizados</td><td class="num font-mono text-success" style="border-color: rgba(131,1,153,0.2);" id="sh_res_hib_cred">- R$ 0,00</td></tr>
+                    </tbody>
+                    <tfoot>
+                      <tr><td style="border-color: rgba(131,1,153,0.3);">Total a Recolher</td><td class="num font-mono text-danger" style="border-color: rgba(131,1,153,0.3);" id="sh_res_hib_total">R$ 0,00</td></tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              <div class="mt-4 sn-alert sn-alert-info" id="sh_veredicto">
+                <i data-lucide="info" style="width: 20px; flex-shrink: 0;"></i>
+                <div id="sh_veredicto_texto">Aguardando cálculo...</div>
+              </div>
+              
+              <button class="btn btn-outline w-full mt-3" onclick="appReactivity.setRegimeAtivo('Simples Híbrido', SHApp.impostoHibrido)"><i data-lucide="check-circle" style="width: 16px;"></i> Aplicar Híbrido ao Dashboard</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABA: LUCRO PRESUMIDO -->
+        <section id="page-lucro-presumido" class="page-view">
+          <div class="card" style="max-width: 950px; margin: 0 auto;">
+            <div class="card-header" style="margin-bottom: 1rem;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.3rem;">Calculadora de Lucro Presumido</h3>
+                <p class="text-muted mt-1" style="font-size: 0.9rem;">Apuração direta de IRPJ, CSLL, PIS e COFINS com integração ao painel.</p>
+              </div>
+              <span class="badge badge-success">PESSOA JURÍDICA</span>
+            </div>
+
+            <div class="grid-2-col mt-4">
+              <div class="form-group">
+                <label class="form-label">Faturamento do Período (R$)</label>
+                <input type="number" id="lp_receita" class="form-input font-mono" placeholder="Sincronizado ou digite...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Segmento de Atividade (Presunção)</label>
+                <select id="lp_segmento" class="form-input">
+                  <option value="comercio">Comércio (IRPJ 8% / CSLL 12%)</option>
+                  <option value="servicos" selected>Serviços Profissionais (IRPJ 32% / CSLL 32%)</option>
+                </select>
+              </div>
+            </div>
+
+            <button onclick="LPApp.calcular()" class="btn btn-success w-full mt-2"><i data-lucide="play-circle" style="width: 18px;"></i> Processar Impostos do Trimestre/Mês</button>
+          
+            <!-- Resultados Lucro Presumido -->
+            <div id="lp_results" style="display: none; margin-top: 2rem;">
+              <table class="sn-table">
+                <thead>
+                  <tr><th>Tributo</th><th class="num">Alíquota Legal</th><th class="num">Base de Cálculo</th><th class="num">Valor a Recolher</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>PIS</td><td class="num font-mono text-muted">0.65%</td><td class="num font-mono" id="lp_base_pis">R$ 0,00</td><td class="num font-mono text-danger" id="lp_val_pis">R$ 0,00</td></tr>
+                  <tr><td>COFINS</td><td class="num font-mono text-muted">3.00%</td><td class="num font-mono" id="lp_base_cofins">R$ 0,00</td><td class="num font-mono text-danger" id="lp_val_cofins">R$ 0,00</td></tr>
+                  <tr><td>IRPJ <span style="font-size:0.7rem; color:var(--text-muted)">(Inc. Adicional se houver)</span></td><td class="num font-mono text-muted">15.00%</td><td class="num font-mono" id="lp_base_irpj">R$ 0,00</td><td class="num font-mono text-danger" id="lp_val_irpj">R$ 0,00</td></tr>
+                  <tr><td>CSLL</td><td class="num font-mono text-muted">9.00%</td><td class="num font-mono" id="lp_base_csll">R$ 0,00</td><td class="num font-mono text-danger" id="lp_val_csll">R$ 0,00</td></tr>
+                </tbody>
+                <tfoot>
+                  <tr><td colspan="3">Carga Tributária Federal Total</td><td class="num font-mono text-danger" style="font-size: 1.2rem;" id="lp_val_total">R$ 0,00</td></tr>
+                </tfoot>
+              </table>
+              <button class="btn btn-outline w-full mt-4" onclick="appReactivity.setRegimeAtivo('Lucro Presumido', LPApp.impostoTotal)"><i data-lucide="check-circle" style="width: 16px;"></i> Aplicar ao Dashboard</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABA: CONSULTA CNAE -->
+        <section id="page-consulta-cnae" class="page-view">
+          <div class="card" style="max-width: 800px; margin: 0 auto; min-height: 600px;">
+            <div class="card-header" style="margin-bottom: 1rem;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.3rem;">Consulta Rápida CNAE</h3>
+                <p class="text-muted mt-1" style="font-size: 0.9rem;">Busca de atividades, anexos do Simples Nacional e validação de Fator R.</p>
+              </div>
+              <span class="badge badge-outline">BASE DADOS</span>
+            </div>
+
+            <div class="form-group mt-4" style="position: relative;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.9rem; color: var(--text-muted); width: 18px;"></i>
+              <input type="text" id="cn_search" class="form-input" style="padding-left: 2.75rem;" placeholder="Digite o código (ex: 62) ou descrição (ex: consultoria)..." onkeyup="CNAEApp.buscar()">
+            </div>
+
+            <div class="pills-container mt-3 mb-4">
+              <button class="pill-btn font-mono" onclick="document.getElementById('cn_search').value='6201'; CNAEApp.buscar();">TI (6201)</button>
+              <button class="pill-btn font-mono" onclick="document.getElementById('cn_search').value='advocacia'; CNAEApp.buscar();">Advocacia</button>
+              <button class="pill-btn font-mono" onclick="document.getElementById('cn_search').value='comércio'; CNAEApp.buscar();">Comércio</button>
+            </div>
+
+            <div id="cnae_results_container" style="display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; max-height: 400px; padding-right: 0.5rem;">
+              <!-- Cards gerados via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- CONSULTOR IA (GEMINI API)                      -->
+        <!-- ============================================== -->
+        <section id="page-consultor-ia" class="page-view">           
+          <div class="card" style="height: 650px; display: flex; flex-direction: column;">
+            
+            <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="bot" class="text-brand" style="width: 28px; height: 28px;"></i>
+                <div>
+                  <h3 class="card-title" style="margin: 0;">Consultor IA Verticce (Google Gemini)</h3>
+                  <span class="text-muted" style="font-size: 0.75rem;">Análise em tempo real alimentada pelo regime tributário ativo no dashboard.</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="password" id="gemini-api-key" value="AQ.Ab8RN6K2PFlazuV59lVDVPUt_UzsKCsbIuclmNE4P_RRRn2SZg" placeholder="Sua API Key (AIza...)" class="form-input" style="width: 240px; font-size: 0.8rem; padding: 0.4rem 0.75rem;">
+                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="geminiAI.salvarChave()"><i data-lucide="key" style="width: 14px;"></i></button>
+              </div>
+            </div>
+
+            <div style="flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;" id="chat-messages">
+              <div class="chat-msg-bubble chat-msg-ai">
+                <strong style="color: #d45fff; display: block; margin-bottom: 0.3rem; font-size: 0.8rem;">Gemini Copilot</strong>
+                Olá! Sou seu consultor executivo conectado ao painel. Já li sua projeção comercial e a apuração tributária ativa. Como posso otimizar seus resultados hoje?
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+              <input type="text" class="form-input" placeholder="Ex: Avalie se vale a pena mudar do Simples para o Lucro Presumido com os números atuais." id="chat-input" onkeypress="if(event.key==='Enter') geminiAI.enviarMensagem()">
+              <button class="btn btn-primary" onclick="geminiAI.enviarMensagem()"><i data-lucide="send" style="width: 16px;"></i></button>
+            </div>
+          </div>         
+        </section>         
+        
+        <!-- AULAS -->
+        <section id="page-aulas" class="page-view">
+          <div class="card" style="padding: 2rem;">
+            <div class="card-header" style="margin-bottom: 1.5rem;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.3rem;">Curadoria de Aulas</h3>
+                <p class="text-muted mt-1" style="font-size: 0.9rem;">Acesse as trilhas de conhecimento e gerencie os vídeos de treinamento da equipe.</p>
+              </div>
+              <button class="btn btn-outline" style="font-size: 0.85rem;"><i data-lucide="plus" style="width: 16px;"></i> Nova Aula</button>
+            </div>
+
+            <!-- Abas / Categorias -->
+            <div class="pills-container mb-4" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+              <button class="pill-btn active" onclick="appReactivity.mudarAbaAula(event, 'fin')">Financeiro</button>
+              <button class="pill-btn" onclick="appReactivity.mudarAbaAula(event, 'com')">Comercial e Metas</button>
+              <button class="pill-btn" onclick="appReactivity.mudarAbaAula(event, 'mkt')">Marketing</button>
+            </div>
+
+            <!-- Módulo: Financeiro -->
+            <div id="aula-cat-fin" class="aula-categoria active">
+              <h4 class="text-muted mb-3" style="font-size: 0.85rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Módulo: Financeiro</h4>
+              <div class="grid-3-col">
+                <!-- Exemplo de Card de Aula -->
+                <div class="card" style="padding: 1rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='var(--brand-primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                  <div class="video-thumb w-full mb-3" style="height: 120px; width: 100%; border-radius: 8px; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-light);">
+                    <i data-lucide="play-circle" class="text-brand" style="width: 36px; height: 36px;"></i>
+                  </div>
+                  <h5 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 600;">Gestão de Fluxo de Caixa</h5>
+                  <span class="badge badge-outline">Aula 01</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Módulo: Comercial e Metas -->
+            <div id="aula-cat-com" class="aula-categoria" style="display: none;">
+              <h4 class="text-muted mb-3" style="font-size: 0.85rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Módulo: Comercial e Metas</h4>
+              <div class="grid-3-col">
+                <!-- Exemplo de Card de Aula -->
+                <div class="card" style="padding: 1rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='var(--accent-success)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                  <div class="video-thumb w-full mb-3" style="height: 120px; width: 100%; border-radius: 8px; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-light);">
+                    <i data-lucide="play-circle" class="text-success" style="width: 36px; height: 36px;"></i>
+                  </div>
+                  <h5 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 600;">Estruturação de Funil e Qualificação</h5>
+                  <span class="badge badge-outline">Aula 01</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Módulo: Marketing -->
+            <div id="aula-cat-mkt" class="aula-categoria" style="display: none;">
+              <h4 class="text-muted mb-3" style="font-size: 0.85rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Módulo: Marketing</h4>
+              <div class="grid-3-col">
+                <!-- Exemplo de Card de Aula -->
+                <div class="card" style="padding: 1rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='var(--accent-warning)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                  <div class="video-thumb w-full mb-3" style="height: 120px; width: 100%; border-radius: 8px; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-light);">
+                    <i data-lucide="play-circle" style="color: var(--accent-warning); width: 36px; height: 36px;"></i>
+                  </div>
+                  <h5 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 600;">Estratégias de Aquisição e Tráfego</h5>
+                  <span class="badge badge-outline">Aula 01</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- AJUSTES -->
+        <section id="page-configuracoes" class="page-view">           
+          <div class="card" style="max-width: 600px; margin: 0 auto;">             
+            <div class="card-header"><h3 class="card-title">Configurações</h3></div>             
+            <div class="form-group mt-2">               
+              <label class="form-label">Nome da Empresa</label>               
+              <input type="text" id="input-config-nome" value="Verticce Corporate" class="form-input" oninput="appReactivity.atualizarNome()">             
+            </div>             
+          </div>         
+        </section>       
+      </div>     
+    </main>   
+  </div>   
+  
+  <script>     
+    lucide.createIcons();     
+    
+    const util = {
+      fmtMoeda: v => (v || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'}),
+      fmtPct: v => ((v || 0)*100).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%'
+    };
+
+    const globalState = {       
+      comercial: { leads: 700, qualificacaoPct: 40, ticket: 5000, faturamentoProjetado: 0 },
+      fiscal: { 
+        regimeAtivoNome: 'Simples Nacional',
+        impostoAtivo: 0, 
+        impostoSN: 0 
+      },
+      dashboard: {
+        receitaLiquida: 0, margemLiquida: 0,
+        historicoBruto: [45000, 52000, 68000, 89000, 110000, 145000, 175000, 0],
+        historicoLiquido: [38000, 44000, 58000, 75000, 93000, 122000, 148000, 0]
+      }
+    };     
+    
+    let dashboardChartInstance = null;     
+    
+    function switchPage(pageId, element) {       
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));       
+      element.classList.add('active');       
+      document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));       
+      document.getElementById(`page-${pageId}`).classList.add('active');       
+      const titles = {         
+        'dashboard': 'Dashboard Resumo',         
+        'comercial': 'Motor de Vendas & Metas',         
+        'financeiro': 'Simples Nacional (Apuração Base)',  
+        'simples-hibrido': 'Simulador Simples Híbrido',
+        'lucro-presumido': 'Simulador Lucro Presumido',
+        'consulta-cnae': 'Consulta Base CNAE',
+        'aulas': 'Biblioteca Executiva',         
+        'consultor-ia': 'Consultor IA (Gemini)',         
+        'configuracoes': 'Ajustes'       
+      };       
+      document.getElementById('page-title').innerText = titles[pageId] || 'Gestão';       
+      lucide.createIcons();     
+    }     
+
+    // ==========================================
+    // APP: REACTIVITY & DASHBOARD
+    // ==========================================
+    const appReactivity = {              
+      atualizarNome: () => {         
+        const nome = document.getElementById('input-config-nome').value || 'Verticce';         
+        document.getElementById('sidebar-company-name').innerText = nome;
+        document.getElementById('sidebar-avatar').innerText = nome.substring(0,2).toUpperCase();       
+      },       
+      
+      atualizarSimulador: () => {         
+        const leads = parseFloat(document.getElementById('slide-leads').value);         
+        const qualPct = parseFloat(document.getElementById('slide-qual').value);         
+        const ticket = parseFloat(document.getElementById('slide-ticket').value);         
+        
+        document.getElementById('val-leads').innerText = leads;         
+        document.getElementById('val-qual').innerText = `${qualPct}%`;         
+        document.getElementById('val-ticket').innerText = util.fmtMoeda(ticket);         
+        
+        const vendas = Math.round(leads * (qualPct / 100) * 0.15); 
+        const faturamento = vendas * ticket;         
+        
+        globalState.comercial.faturamentoProjetado = faturamento;
+        document.getElementById('res-faturamento').innerText = util.fmtMoeda(faturamento);         
+        document.getElementById('res-vendas').innerText = vendas;         
+        
+        // Sincroniza faturamento para calculadoras
+        document.getElementById('sn-rpainterno').value = faturamento;
+        document.getElementById('sh_faturamento').value = faturamento;
+        document.getElementById('lp_receita').value = faturamento;
+
+        snApp.calcular(); // Aciona recálculo automático do Simples base
+      },       
+      
+      setRegimeAtivo: (nome, valorImposto) => {
+        globalState.fiscal.regimeAtivoNome = nome;
+        globalState.fiscal.impostoAtivo = valorImposto;
+        document.getElementById('active-regime-badge').innerHTML = `<i data-lucide="check-circle" style="width:12px; margin-right:4px;"></i> Regime: ${nome}`;
+        lucide.createIcons();
+        appReactivity.atualizarDashboard();
+        
+        // Retorna para o dashboard para visualizar
+        document.querySelectorAll('.nav-item')[0].click();
+      },
+
+      atualizarDashboard: () => {
+        const bruto = globalState.comercial.faturamentoProjetado;
+        const imposto = globalState.fiscal.impostoAtivo;
+        const liquido = bruto - imposto;
+        
+        globalState.dashboard.receitaLiquida = liquido;
+        globalState.dashboard.margemLiquida = bruto > 0 ? (liquido / bruto) : 0;
+        
+        document.getElementById('kpi-dash-bruto').innerText = util.fmtMoeda(bruto);
+        document.getElementById('kpi-dash-imposto').innerText = util.fmtMoeda(imposto);
+        document.getElementById('kpi-dash-liquido').innerText = util.fmtMoeda(liquido);
+        document.getElementById('kpi-dash-margem').innerText = `${(globalState.dashboard.margemLiquida * 100).toFixed(1)}% Margem Net`;
+
+        if(dashboardChartInstance) { 
+          globalState.dashboard.historicoBruto[7] = bruto;
+          globalState.dashboard.historicoLiquido[7] = liquido;
+          dashboardChartInstance.update(); 
+        }
+      },
+
+      mudarAbaAula: (event, categoria) => {
+        // Remove 'active' de todos os botões da aba de aulas
+        document.querySelectorAll('#page-aulas .pill-btn').forEach(btn => btn.classList.remove('active'));
+        // Adiciona 'active' no botão clicado
+        event.target.classList.add('active');
+        
+        // Esconde todas as categorias
+        document.querySelectorAll('#page-aulas .aula-categoria').forEach(el => el.style.display = 'none');
+        // Mostra a categoria selecionada
+        document.getElementById('aula-cat-' + categoria).style.display = 'block';
+        
+        lucide.createIcons(); // Recarrega os ícones se necessário
+      }
+    };     
+
+    // ==========================================
+    // APP: SIMPLES NACIONAL (TRADICIONAL - BASE)
+    // ==========================================
+    const snApp = {
+      NOMINAL: {
+        I:  [ [0.04,0], [0.073,5940], [0.095,13860], [0.107,22500], [0.143,87300], [0.19,378000] ],
+        III:[ [0.06,0], [0.112,9360], [0.135,17640], [0.16,35640], [0.21,125640], [0.33,648000] ],
+      },
+      onAtividadeChange: () => { snApp.calcular(); },
+      onAnexoServicoChange: () => { snApp.calcular(); },
+      updateFatorR: () => { snApp.calcular(); },
+      
+      calcular: () => {
+        let anexo = document.getElementById('sn-atividade').value;
+        if(anexo === 'servicos') anexo = 'III'; // Simulação simplificada anexo III
+        if(anexo === 'II') anexo = 'I'; // fallback simulado
+        
+        let rbt12 = (parseFloat(document.getElementById('sn-rbt12interno').value)||0) + (parseFloat(document.getElementById('sn-rbt12externo').value)||0);
+        if (rbt12 === 0) rbt12 = globalState.comercial.faturamentoProjetado * 12; 
+        
+        const rpa = parseFloat(document.getElementById('sn-rpainterno').value) || 0;
+        if(rpa === 0) return;
+
+        let idx = 5;
+        const faixas = [180000, 360000, 720000, 1800000, 3600000, 4800000];
+        for(let i=0; i<faixas.length; i++){ if(rbt12 <= faixas[i]) { idx = i; break; } }
+        
+        const [aliqNom, deducao] = snApp.NOMINAL[anexo][idx];
+        let aliqEfetiva = ((rbt12 * aliqNom) - deducao) / rbt12;
+        if(aliqEfetiva < 0) aliqEfetiva = 0;
+
+        const imposto = rpa * aliqEfetiva;
+        document.getElementById('sn-dasTotal').textContent = util.fmtMoeda(imposto);
+        document.getElementById('sn-anexoUsado').textContent = `Anexo ${anexo}`;
+        document.getElementById('sn-aliqEfetiva').textContent = util.fmtPct(aliqEfetiva);
+
+        globalState.fiscal.impostoSN = imposto;
+        
+        // Se este for o regime ativo atual, atualiza o dashboard
+        if(globalState.fiscal.regimeAtivoNome === 'Simples Nacional') {
+            globalState.fiscal.impostoAtivo = imposto;
+            appReactivity.atualizarDashboard();
+        }
+      }
+    };
+
+    // ==========================================
+    // APP: LUCRO PRESUMIDO
+    // ==========================================
+    const LPApp = {
+      impostoTotal: 0,
+      calcular: () => {
+        const fat = parseFloat(document.getElementById('lp_receita').value) || 0;
+        const segmento = document.getElementById('lp_segmento').value;
+        
+        // Presunções
+        const pctIrpj = segmento === 'servicos' ? 0.32 : 0.08;
+        const pctCsll = segmento === 'servicos' ? 0.32 : 0.12;
+
+        const baseIrpj = fat * pctIrpj;
+        const baseCsll = fat * pctCsll;
+
+        // PIS/COFINS Cumulativo (Lucro Presumido)
+        const pis = fat * 0.0065;
+        const cofins = fat * 0.03;
+
+        // CSLL (9%)
+        const csll = baseCsll * 0.09;
+
+        // IRPJ (15% + Adicional 10% se base > 20k no mês)
+        let irpj = baseIrpj * 0.15;
+        if(baseIrpj > 20000) {
+            irpj += (baseIrpj - 20000) * 0.10;
+        }
+
+        LPApp.impostoTotal = pis + cofins + irpj + csll;
+
+        // Atualiza UI
+        document.getElementById('lp_base_pis').innerText = util.fmtMoeda(fat);
+        document.getElementById('lp_val_pis').innerText = util.fmtMoeda(pis);
+        
+        document.getElementById('lp_base_cofins').innerText = util.fmtMoeda(fat);
+        document.getElementById('lp_val_cofins').innerText = util.fmtMoeda(cofins);
+
+        document.getElementById('lp_base_irpj').innerText = util.fmtMoeda(baseIrpj);
+        document.getElementById('lp_val_irpj').innerText = util.fmtMoeda(irpj);
+
+        document.getElementById('lp_base_csll').innerText = util.fmtMoeda(baseCsll);
+        document.getElementById('lp_val_csll').innerText = util.fmtMoeda(csll);
+
+        document.getElementById('lp_val_total').innerText = util.fmtMoeda(LPApp.impostoTotal);
+        
+        document.getElementById('lp_results').style.display = 'block';
+      }
+    };
+
+    // ==========================================
+    // APP: SIMPLES HÍBRIDO
+    // ==========================================
+    const SHApp = {
+      impostoHibrido: 0,
+      calcular: () => {
+        // Recupera valores
+        const fat = parseFloat(document.getElementById('sh_faturamento').value) || 0;
+        const tCbs = parseFloat(document.getElementById('sh_taxaCBS').value) / 100 || 0;
+        const tIbs = parseFloat(document.getElementById('sh_taxaIBS').value) / 100 || 0;
+        const creditos = parseFloat(document.getElementById('sh_creditos').value) || 0;
+
+        // 1. Apuração Tradicional (Usa estado do SN)
+        const impTradicional = globalState.fiscal.impostoSN;
+        const aliqTradicional = fat > 0 ? (impTradicional / fat) : 0;
+
+        // 2. Apuração Híbrida 
+        // Desconta CPP/ISS/ICMS/PIS/COFINS "por dentro" e aplica por fora. 
+        // Simplificação matemática conceitual para o painel:
+        // Carga interna mantida (IRPJ/CSLL/CPP) = Aprox 40% do DAS atual (depende do anexo, simulando genérico)
+        const dasRetido = impTradicional * 0.40; 
+        
+        // Iva Cobrado por fora
+        const ivaDebito = fat * (tCbs + tIbs);
+        let ivaRecolher = ivaDebito - creditos;
+        if(ivaRecolher < 0) ivaRecolher = 0;
+
+        SHApp.impostoHibrido = dasRetido + ivaRecolher;
+
+        // UI - Tradicional
+        document.getElementById('sh_res_trad_aliq').innerText = util.fmtPct(aliqTradicional);
+        document.getElementById('sh_res_trad_imposto').innerText = util.fmtMoeda(impTradicional);
+        document.getElementById('sh_res_trad_carga').innerText = util.fmtPct(aliqTradicional);
+
+        // UI - Hibrido
+        document.getElementById('sh_res_hib_das').innerText = util.fmtMoeda(dasRetido);
+        document.getElementById('sh_res_hib_iva').innerText = util.fmtMoeda(ivaDebito);
+        document.getElementById('sh_res_hib_cred').innerText = `- ${util.fmtMoeda(creditos)}`;
+        document.getElementById('sh_res_hib_total').innerText = util.fmtMoeda(SHApp.impostoHibrido);
+        
+        // Veredicto
+        const dif = impTradicional - SHApp.impostoHibrido;
+        const vd = document.getElementById('sh_veredicto');
+        const vdt = document.getElementById('sh_veredicto_texto');
+        
+        vd.classList.remove('sn-alert-info', 'sn-alert-success', 'sn-alert-warn');
+        if(dif > 0) {
+            vd.classList.add('sn-alert-success');
+            vdt.innerHTML = `<strong>O Modelo Híbrido é mais vantajoso!</strong> Economia estimada de <strong>${util.fmtMoeda(dif)}</strong> no período devido à apropriação de créditos.`;
+        } else {
+            vd.classList.add('sn-alert-warn');
+            vdt.innerHTML = `<strong>O Simples Tradicional é mais vantajoso.</strong> O modelo Híbrido custaria <strong>${util.fmtMoeda(Math.abs(dif))}</strong> a mais. O volume de créditos não justifica a transição.`;
+        }
+
+        document.getElementById('sh_results').style.display = 'block';
+      }
+    };
+
+    // ==========================================
+    // APP: CNAE
+    // ==========================================
+    const CNAEApp = {
+      db: [
+        { cnae: "6201-5/01", desc: "Desenvolvimento de programas de computador sob encomenda", anexo: "V", fatorR: true },
+        { cnae: "6202-3/00", desc: "Desenvolvimento e licenciamento de programas", anexo: "V", fatorR: true },
+        { cnae: "6911-7/01", desc: "Serviços advocatícios", anexo: "IV", fatorR: false },
+        { cnae: "7020-4/00", desc: "Atividades de consultoria em gestão empresarial", anexo: "V", fatorR: true },
+        { cnae: "4713-0/02", desc: "Lojas de variedades, exceto lojas de departamentos", anexo: "I", fatorR: false },
+        { cnae: "4751-2/01", desc: "Comércio varejista especializado de equipamentos e suprimentos de TI", anexo: "I", fatorR: false }
+      ],
+      buscar: () => {
+        const termo = document.getElementById('cn_search').value.toLowerCase();
+        const container = document.getElementById('cnae_results_container');
+        container.innerHTML = '';
+
+        if(termo.length < 2) return;
+
+        const filtrados = CNAEApp.db.filter(i => i.cnae.toLowerCase().includes(termo) || i.desc.toLowerCase().includes(termo));
+        
+        if(filtrados.length === 0) {
+            container.innerHTML = `<div class="text-muted" style="font-size:0.9rem; padding: 1rem;">Nenhum CNAE encontrado na base local para "${termo}".</div>`;
+            return;
+        }
+
+        filtrados.forEach(i => {
+            const fatorBadge = i.fatorR ? `<span class="badge badge-success">Fator R: Sim (Anexo III)</span>` : `<span class="badge badge-outline">Sem Fator R</span>`;
+            container.innerHTML += `
+              <div class="cnae-card">
+                <div>
+                  <strong class="font-mono text-brand" style="font-size: 1.1rem; display: block; margin-bottom: 0.2rem;">${i.cnae}</strong>
+                  <span style="font-size: 0.85rem; color: var(--text-primary);">${i.desc}</span>
+                </div>
+                <div style="text-align: right; display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end;">
+                  <span class="badge badge-brand">Anexo ${i.anexo}</span>
+                  ${fatorBadge}
+                </div>
+              </div>
+            `;
+        });
+      }
+    };
+
+    // ==========================================
+    // IA GEMINI INTEGRATION
+    // ==========================================
+    const geminiAI = {
+      salvarChave: () => {
+        const chave = document.getElementById('gemini-api-key').value.trim();
+        if(!chave) { alert('Insira a chave da API.'); return; }
+        localStorage.setItem('verticce_gemini_key', chave);
+        alert('Chave de API salva com sucesso!');
+      },
+      enviarMensagem: async () => {
+        const input = document.getElementById('chat-input');
+        const promptText = input.value.trim();
+        if(!promptText) return;
+
+        let apiKey = document.getElementById('gemini-api-key').value || localStorage.getItem('verticce_gemini_key');
+        if(!apiKey) { alert('Insira a chave da API do Gemini acima.'); return; }
+
+        const chat = document.getElementById('chat-messages');
+        chat.innerHTML += `<div class="chat-msg-bubble chat-msg-user"><strong>Você</strong><br>${promptText}</div>`;
+        input.value = '';
+        chat.scrollTop = chat.scrollHeight;
+
+        const loadId = 'loading-' + Date.now();
+        chat.innerHTML += `<div class="chat-msg-bubble chat-msg-ai" id="${loadId}"><em class="text-muted">Analisando contexto financeiro...</em></div>`;
+        chat.scrollTop = chat.scrollHeight;
+
+        const contexto = `Dados: Faturamento Bruto: ${util.fmtMoeda(globalState.comercial.faturamentoProjetado)}. Regime Fiscal Ativo: ${globalState.fiscal.regimeAtivoNome}. Imposto Ativo Projetado: ${util.fmtMoeda(globalState.fiscal.impostoAtivo)}. Margem Líquida atual: ${(globalState.dashboard.margemLiquida*100).toFixed(2)}%.`;
+
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: `Aja como consultor executivo fiscal. Use estes dados:\n${contexto}\n\nPergunta: ${promptText}` }] }] })
+          });
+          const data = await res.json();
+          document.getElementById(loadId).remove();
+
+          if(data.candidates) {
+            chat.innerHTML += `<div class="chat-msg-bubble chat-msg-ai"><strong style="color:#d45fff;">Gemini Copilot</strong><br>${data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}</div>`;
+          } else throw new Error('Erro de resposta.');
+        } catch (e) {
+          if(document.getElementById(loadId)) document.getElementById(loadId).remove();
+          chat.innerHTML += `<div class="chat-msg-bubble chat-msg-ai" style="border-color:var(--accent-danger);"><strong class="text-danger">Erro na IA</strong><br>${e.message}</div>`;
+        }
+        chat.scrollTop = chat.scrollHeight;
+      }
+    };
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    window.onload = () => {       
+      const savedKey = localStorage.getItem('verticce_gemini_key');
+      if(savedKey) document.getElementById('gemini-api-key').value = savedKey;
+
+      const ctx = document.getElementById('dashboardChart').getContext('2d');       
+      Chart.defaults.color = '#9e93b0'; Chart.defaults.font.family = 'Inter';
+      dashboardChartInstance = new Chart(ctx, {         
+        type: 'line',         
+        data: {           
+          labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Projeção (Mês Atual)'],           
+          datasets: [
+            { label: 'Bruto (R$)', data: globalState.dashboard.historicoBruto, borderColor: '#830199', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(131, 1, 153, 0.08)' },
+            { label: 'Líquido (R$)', data: globalState.dashboard.historicoLiquido, borderColor: '#10b981', borderWidth: 2, borderDash: [5, 5], tension: 0.4, fill: false }
+          ]         
+        },         
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end' } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true } } }       
+      });              
+      
+      document.getElementById('sn-rbt12interno').value = 850000; 
+      appReactivity.atualizarSimulador();       
+    };   
+  </script> 
+</body> 
+</html>
